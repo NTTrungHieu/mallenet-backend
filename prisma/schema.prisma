@@ -14,16 +14,136 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  username   String   @unique
-  fullname   String
-  password   String
-  gender     Gender
-  profilePic String
-  createdAt  DateTime @default(now())
+  id             String      @id @default(cuid())
+  username       String      @unique @db.VarChar(50)
+  fullname       String
+  email          String      @unique @db.VarChar(50)
+  password       String
+  bio            String
+  gender         Gender
+  profilePicture String
+  createdAt      DateTime    @default(now())
+  serviceType    ServiceType @default(Public)
+
+  conversationsIds String[]
+
+  conversations    Conversation[]
+  messages         Message[]
+  post             Post[]
+  comment          Comment[]
+  like             Like[]
+  friendShipOfUser FriendShipOfUser[]
 }
 
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participantIds String[]
+  participants   User[]
+
+  messageIds String[]
+  messages   Message[]
+}
+
+model Message {
+  id String @id @default(cuid())
+
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
+
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id          String      @id @default(cuid())
+  content     String
+  mediaType   String      @db.VarChar(20)
+  mediaURL    String
+  publishType PublishType @default(Public)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Comment   Comment[]
+  Like      Like[]
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  content String
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  isEdited  Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Like      Like[]
+}
+
+model Like {
+  id      String @id @default(cuid())
+  content String
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  commentId String
+  comment   Comment @relation(fields: [commentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FriendShip {
+  id String @id @default(cuid())
+  FriendShipOfUser FriendShipOfUser[]
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model FriendShipOfUser {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  friendshipId String
+  friendShip   FriendShip @relation(fields: [friendshipId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Enum
 enum Gender {
   male
   female
+}
+
+enum ServiceType {
+  Public
+  Premium
+}
+
+enum PublishType {
+  Public
+  Friend
+  OnlyMe
 }
