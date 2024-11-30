@@ -20,8 +20,9 @@ model User {
   email          String      @unique @db.VarChar(50)
   password       String
   bio            String
-  gender         Gender
   profilePicture String
+  gender         Gender      @default(male)
+  loginType      LoginType   @default(normal)
   createdAt      DateTime    @default(now())
   serviceType    ServiceType @default(Public)
 
@@ -33,6 +34,9 @@ model User {
   comment          Comment[]
   like             Like[]
   friendShipOfUser FriendShipOfUser[]
+
+  follower  Connection[] @relation(name: "follower")
+  following Connection[] @relation(name: "following")
 }
 
 model Conversation {
@@ -111,11 +115,11 @@ model Like {
 }
 
 model FriendShip {
-  id String @id @default(cuid())
+  id               String             @id @default(cuid())
   FriendShipOfUser FriendShipOfUser[]
 
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model FriendShipOfUser {
@@ -131,7 +135,24 @@ model FriendShipOfUser {
   updatedAt DateTime @updatedAt
 }
 
-// Enum
+model Connection {
+  id String @id @default(cuid())
+
+  followerId String
+  follower   User   @relation(name: "follower", fields: [followerId], references: [id])
+
+  followingId String
+  following   User   @relation(name: "following", fields: [followingId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum LoginType {
+  normal
+  google
+}
+
 enum Gender {
   male
   female
